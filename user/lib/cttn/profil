@@ -1,0 +1,483 @@
+// ignore_for_file: prefer_const_constructors, sized_box_for_whitespace, unused_element
+
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:user/model/warga.dart';
+import 'package:http/http.dart' as http;
+import 'package:user/model/url.dart';
+import 'package:user/model/wargaku.dart';
+import 'package:user/service/apiStatic.dart';
+
+import '../model/apiku.dart';
+
+class ProfilePage extends StatefulWidget {
+  const ProfilePage({Key? key}) : super(key: key);
+  @override
+  _ProfilePageState createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  var loading = false;
+  late CallApi apiService;
+
+  @override
+  void initState() {
+    super.initState();
+    apiService = CallApi();
+  }
+  // final list = new List<Warga>();
+  // List<Warga> _foods = Warga();
+  // _lihatdata() async {
+  //   list.clear();
+  //   setState(() {
+  //     loading = true;
+  //   });
+  //   final response = await http.get(Uri.parse(Urlku.getwarga));
+  //   if (response.contentLength == 2){
+
+  //   }else{
+  //     final data = jsonDecode(response.body);
+  //     data.forEach((api){
+  //       final lihat = new Warga(
+  //         api['id'],
+  //         api['desaId'], 
+  //         api['nik'], 
+  //         api['namawarga'], 
+  //         api['rt'], 
+  //         api['rw'], 
+  //         api['kab'], 
+  //         api['email'], 
+  //         api['password'], 
+  //         api['latittude'], 
+  //         api['longitude'], 
+  //         api['status'], 
+  //         api['createdAt'], 
+  //         api['updatedAt'], 
+  //         api['deletedAt']
+  //       );
+  //       list.add(lihat);
+  //     });
+  //     setState(() {
+  //       loading = false;
+  //     });
+  //   }
+  // }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      //backgroundColor: Color(0xFFE5E5E5),
+      appBar: AppBar(
+        backgroundColor: Color(0xFFFFFFFF),
+        elevation: 0,
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context);
+          }, 
+          icon: Icon(Icons.arrow_back_ios, color: Color(0xFF22215B),)
+        ),
+        title: Text(
+          'Profil Warga ',
+          style: GoogleFonts.lato(
+            fontSize: 25,
+            color: Color(0xFF22215B)
+          ),
+        ),
+        //centerTitle: true,
+      ),
+      body: FutureBuilder<List<mywarga>>(
+          future: apiStatic.getwarga(),
+          builder: (context, snapshot) {
+            // if (snapshot.hasError) {
+            //   return Center(
+            //     child: Text(
+            //         "Something wrong with message: ${snapshot.error.toString()}"),
+            //   );
+            // } else 
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            } else if (snapshot.connectionState == ConnectionState.done) {
+              List<mywarga> listwarga = snapshot.data!;
+              //List<Warga> profiles = _items.map((e)=>Warga(e)).toList();
+              //return _getprofile(listwarga);
+              // return Container(
+              //   color: Colors.amber,
+              //   padding: EdgeInsets.all(10),
+              //   child: ListView.builder(
+              //     itemCount: snapshot.data!.length,
+              //     itemBuilder: (BuildContext context, int index) {
+              //       //mywarga profile = listwarga[index];
+              //       return Column(
+              //           children: [
+              //             SizedBox(height: 50),
+              //             Container(
+              //               height: 220,
+              //               width: 220,
+              //               //color: Colors.amber,
+              //               child: Image.asset(
+              //                 'assets/img/profile.png',
+              //                 fit: BoxFit.contain,
+              //               ),
+              //             ),
+              //             SizedBox(height: 30), 
+              //           ]
+              //         );
+              //     }
+              //   ),
+              // );
+              return Container(
+                padding:  EdgeInsets.all(10),
+                child: ListView.builder(
+                  itemCount: snapshot.data!.length,
+                  itemBuilder: (BuildContext context, int index) => Column(
+                    children: [
+                      InkWell(
+                        onTap: (){
+
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(25),
+                            color: Colors.red
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.usb_rounded),
+                              Column(
+                                children: [
+                                  Text(listwarga[index].namawarga),
+                                  Text(listwarga[index].email),
+                                ],
+                              )
+                            ]
+                          ),
+                        ),
+                      )
+                    ],
+                  )
+                )
+              );
+            } else {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+          },
+        ),
+    );
+  }
+  
+  Widget _getprofile(List<mywarga>listwarga){
+    return ListView.builder(
+      itemBuilder: (context, index) {
+        mywarga profile = listwarga[index];
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            children: [
+              SizedBox(height: 50),
+              Container(
+                height: 220,
+                width: 220,
+                //color: Colors.amber,
+                child: Image.asset(
+                  'assets/img/profile.png',
+                  fit: BoxFit.contain,
+                ),
+              ),
+              SizedBox(height: 30),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    SizedBox(height: 30),
+                    // TextField(
+                    //   ///autocorrect: false,
+                    //   showCursor: true,
+                    //   style: GoogleFonts.lato(
+                    //     fontSize: 18,
+                    //   ),
+                    //   textCapitalization: TextCapitalization.words,
+                    //   decoration: InputDecoration(
+                    //     prefixIcon: Icon(
+                    //       Icons.person,
+                    //       size: 30,
+                    //     ),
+                    //     border: OutlineInputBorder(
+                    //     ),
+                    //     enabledBorder: OutlineInputBorder(
+                    //       borderRadius: BorderRadius.circular(20),
+                    //     ),
+                    //     focusedBorder: OutlineInputBorder(
+                    //       borderRadius: BorderRadius.circular(20),
+                    //       borderSide: BorderSide(
+                    //         color: Colors.blue.shade700
+                    //       )
+                    //     ),
+                    //     prefixText: profile.namawarga,
+                    //     labelText: "Nama Warga",
+                    //     labelStyle: GoogleFonts.lato(
+                    //       fontSize: 18,
+                    //     )
+                    //   ),
+                    // ),
+                    Text("Nama" + profile.namawarga),
+                    SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          width: MediaQuery.of(context).size.width * 0.4,
+                          child:_buildTfRt(),
+                        ),
+                        Container(
+                          width: MediaQuery.of(context).size.width * 0.4,
+                          child:_buildTfRw(),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+                    _buildTfEmail(),
+                    SizedBox(height: 50),
+                  ]
+                )
+              )
+            ]
+          )
+        );
+      }
+    );
+  }
+
+  Widget _buildTfNama() {
+    return TextField(
+      ///autocorrect: false,
+      showCursor: true,
+      style: GoogleFonts.lato(
+        fontSize: 18,
+      ),
+      textCapitalization: TextCapitalization.words,
+      decoration: InputDecoration(
+        prefixIcon: Icon(
+          Icons.person,
+          size: 30,
+        ),
+        border: OutlineInputBorder(
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(
+            color: Colors.blue.shade700
+          )
+        ),
+        prefixText: "profile",
+        labelText: "Nama Warga",
+        labelStyle: GoogleFonts.lato(
+          fontSize: 18,
+        )
+      ),
+    );
+  }
+  
+  Widget _buildTfNik() {
+    return TextField(
+      ///autocorrect: false,
+      showCursor: true,
+      style: GoogleFonts.lato(
+        fontSize: 18,
+      ),
+      textCapitalization: TextCapitalization.words,
+      decoration: InputDecoration(
+        prefixIcon: Icon(
+          Icons.person,
+          size: 30,
+        ),
+        border: OutlineInputBorder(
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(
+            color: Colors.blue.shade700
+          )
+        ),
+        labelText: "Nik",
+        labelStyle: GoogleFonts.lato(
+          fontSize: 18,
+        )
+      ),
+    );
+  }
+
+  Widget _buildTfRt() {
+    return TextField(
+      ///autocorrect: false,
+      showCursor: true,
+      style: GoogleFonts.lato(
+        fontSize: 18,
+      ),
+      textCapitalization: TextCapitalization.words,
+      decoration: InputDecoration(
+        prefixIcon: Icon(
+          Icons.person,
+          size: 30,
+        ),
+        border: OutlineInputBorder(
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(
+            color: Colors.blue.shade700
+          )
+        ),
+        labelText: "RT",
+        labelStyle: GoogleFonts.lato(
+          fontSize: 18,
+        )
+      ),
+    );
+  }
+
+  Widget _buildTfRw() {
+    return TextField(
+      ///autocorrect: false,
+      showCursor: true,
+      style: GoogleFonts.lato(
+        fontSize: 18,
+      ),
+      textCapitalization: TextCapitalization.words,
+      decoration: InputDecoration(
+        // prefixIcon: Icon(
+        //   Icons.person,
+        //   size: 30,
+        // ),
+        border: OutlineInputBorder(
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(
+            color: Colors.blue.shade700
+          )
+        ),
+        labelText: "RW",
+        labelStyle: GoogleFonts.lato(
+          fontSize: 18,
+        )
+      ),
+    );
+  }
+
+  Widget _buildTfLong() {
+    return TextField(
+      ///autocorrect: false,
+      showCursor: true,
+      style: GoogleFonts.lato(
+        fontSize: 18,
+      ),
+      textCapitalization: TextCapitalization.words,
+      decoration: InputDecoration(
+        prefixIcon: Icon(
+          Icons.person,
+          size: 30,
+        ),
+        border: OutlineInputBorder(
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(
+            color: Colors.blue.shade700
+          )
+        ),
+        labelText: "Longitude",
+        labelStyle: GoogleFonts.lato(
+          fontSize: 18,
+        )
+      ),
+    );
+  }
+
+  Widget _buildTfLat() {
+    return TextField(
+      ///autocorrect: false,
+      showCursor: true,
+      style: GoogleFonts.lato(
+        fontSize: 18,
+      ),
+      textCapitalization: TextCapitalization.words,
+      decoration: InputDecoration(
+        // prefixIcon: Icon(
+        //   Icons.person,
+        //   size: 30,
+        // ),
+        border: OutlineInputBorder(
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(
+            color: Colors.blue.shade700
+          )
+        ),
+        labelText: "Latittude",
+        labelStyle: GoogleFonts.lato(
+          fontSize: 18,
+        )
+      ),
+    );
+  }
+
+  Widget _buildTfEmail() {
+    return TextField(
+      ///autocorrect: false,
+      showCursor: true,
+      style: GoogleFonts.lato(
+        fontSize: 18,
+      ),
+      textCapitalization: TextCapitalization.words,
+      decoration: InputDecoration(
+        prefixIcon: Icon(
+          Icons.mail,
+          size: 30,
+        ),
+        border: OutlineInputBorder(
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(
+            color: Colors.blue.shade700
+          )
+        ),
+        labelText: "No. HP/Email",
+        labelStyle: GoogleFonts.lato(
+          fontSize: 18,
+        )
+      ),
+    );
+  }
+
+}

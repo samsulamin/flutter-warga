@@ -1,0 +1,76 @@
+
+Container(
+                      margin: EdgeInsets.symmetric(horizontal: 5),
+                      //color: Colors.black87,
+                      height: 100,
+                      width: 90,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Material(
+                            //elevation: 4.0,
+                            clipBehavior: Clip.hardEdge,
+                            color: Colors.transparent,
+                            child: FutureBuilder(
+                              future: apiService.getwarga(),
+                              builder: (BuildContext context, AsyncSnapshot<List<Warga>> snapshot) {
+                                if (snapshot.hasError) {
+                                  return Center(
+                                    child: Text(
+                                        "GGL"),
+                                  );
+                                } else if (snapshot.connectionState == ConnectionState.done) {
+                                  List<Warga> profiles = snapshot.data!;
+                                  //return Text(profiles.length.toString(), style: TextStyle(fontSize: 100));
+                                  return ListView.builder(
+                                    scrollDirection: Axis.vertical,
+                                    shrinkWrap: true,
+                                    itemCount: snapshot.data!.length,
+                                    itemBuilder: (context, index) {
+                                      Warga profile = profiles[index];
+                                      return Column(
+                                        children: [
+                                          Ink.image(
+                                            image: AssetImage("assets/icons/profil.png"),
+                                            fit: BoxFit.cover,
+                                            width: 50,
+                                            height: 50,
+                                            child: InkWell(
+                                              onTap: () async {
+                                                var result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
+                                                  return ProfilePage(profiles: profile);
+                                                }));
+                                                if (result != null) {
+                                                  setState(() {});
+                                                }
+                                              }
+                                            ),
+                                          ),
+                                          Align(
+                                            alignment: Alignment.bottomCenter,
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: Text(
+                                                "Profile", 
+                                                style:  GoogleFonts.lato(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold
+                                                )
+                                              ),
+                                            ),
+                                          )
+                                        ],
+                                      );
+                                    }
+                                  );
+                                } else {
+                                  return Center(
+                                    child: Text("Not Data"),
+                                  );
+                                }
+                              },
+                            ),
+                          )
+                        ],
+                      ),
+                    ),

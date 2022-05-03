@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "535778183959",
+    "project_id": "warga-d2501",
+    "storage_bucket": "warga-d2501.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:535778183959:android:2cfde808c22634c8d54552",
+        "android_client_info": {
+          "package_name": "com.example.user"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "535778183959-adcjuni90iv9ob3qj6ktip70uc32ps0e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_P4mcAJfMzIJTToo4EuWmrvuvFs9sa-I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "535778183959-adcjuni90iv9ob3qj6ktip70uc32ps0e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

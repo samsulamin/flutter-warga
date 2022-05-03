@@ -1,0 +1,391 @@
+import 'dart:convert';
+import 'dart:ui';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http ;
+import 'package:user_warga/model/apiku.dart';
+import 'package:user_warga/model/pengajuan.dart';
+import 'package:geolocation/geolocation.dart';
+
+final GlobalKey<ScaffoldState> _scaffoldState = GlobalKey<ScaffoldState>();
+
+class FormAddScreen extends StatefulWidget {
+  @override
+  _FormAddScreenState createState() => _FormAddScreenState();
+}
+
+class _FormAddScreenState extends State<FormAddScreen> {
+  bool _isLoading = false;
+  ApiService _apiService = ApiService();
+  //bool _isFieldDesaIdValid;
+  bool _isFieldNikValid;
+  bool _isFieldNamawargaValid;
+  bool _isFieldRtValid;
+  bool _isFieldRwValid;
+  bool _isFieldEmailValid;
+  bool _isFieldPasswordValid;
+  //TextEditingController _controllerDesaId = TextEditingController();
+  TextEditingController _controllerNik = TextEditingController();
+  TextEditingController _controllerNamawarga = TextEditingController();
+  TextEditingController _controllerRt = TextEditingController();
+  TextEditingController _controllerRw = TextEditingController();
+  TextEditingController _controllerEmail = TextEditingController();
+  TextEditingController _controllerPassword = TextEditingController();
+
+  String holder = '' ;
+  String selectName;
+  List data = List();
+  Future getDesa()async{
+    var response = await http.get("http://192.168.43.9/jadwal-pengangkutan/public/api/desa", headers: {"Accept":"application/json"});
+    var jsonBody = response.body;
+    var jsonData = json.decode(jsonBody);
+    // var jsonData = json.decode(response.body)['results']
+    //     .map((data) => Desa.fromJson(data))
+    //     .toList();
+
+    setState((){
+      data = jsonData;
+    });
+    //print(jsonData);
+  }
+
+//geolocation
+  String latit = '00.00000';
+  String longit = '00.00000';
+
+  @override
+  void initState(){
+    super.initState();
+    getDesa();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      key: _scaffoldState,
+      appBar: AppBar(
+        iconTheme: IconThemeData(color: Colors.white),
+        title: Text(
+          "Form Add",
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+      body: Stack(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+               // _buildTextFieldDesaId(),
+               
+                _builddropdownDesa(),
+                _buildTextFieldRt(),
+                _buildTextFieldRw(),
+                _buildTextFieldNik(),
+                _buildTextFieldName(),
+                _buildTextFieldEmail(),
+                _buildTextFieldPassword(),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: RaisedButton(
+                    onPressed: () {
+                      if (
+                        //_isFieldDesaIdValid == null ||
+                          _isFieldNikValid == null ||
+                          _isFieldNamawargaValid == null ||
+                          _isFieldRtValid == null ||
+                          _isFieldRwValid == null ||
+                          _isFieldEmailValid == null ||
+                          _isFieldPasswordValid == null ||
+                          //!_isFieldDesaIdValid ||
+                          !_isFieldNikValid ||
+                          !_isFieldNamawargaValid ||
+                          !_isFieldRtValid ||
+                          !_isFieldRwValid ||
+                          !_isFieldEmailValid ||
+                          !_isFieldPasswordValid) {
+                        _scaffoldState.currentState.showSnackBar(
+                          SnackBar(
+                            content: Text("Please fill all field"),
+                          ),
+                        );
+                        return;
+                      }
+                      setState(() => _isLoading = true);
+                      //LOCATION
+                      // Geolocation.enableLocationServices().then((result) {
+                      //   // Request location
+                      //   // print(result);
+                      // }).catchError((e) {
+                      //   // Location Services Enablind Cancelled
+                      //   // print(e);
+                      // });
+
+                      Geolocation.currentLocation(accuracy: LocationAccuracy.best)
+                          .listen((result) {
+                        if (result.isSuccessful) {
+                          setState(() {
+                            latit = result.location.latitude.toString();
+                            longit = result.location.longitude.toString();
+                          });
+                        }
+                      });
+
+                      setState(() {
+                        holder = selectName;
+                      });
+                      
+                      int desaid = int.parse('$holder'.toString());
+                      int nik = int.parse(_controllerNik.text.toString());
+                      String namawarga = _controllerNamawarga.text.toString();
+                      String rt = _controllerRt.text.toString();
+                      String rw = _controllerRw.text.toString();
+                      String lat = "${latit}".toString();
+                      String long = "${longit}".toString();
+                      String email = _controllerEmail.text.toString();
+                      String password = _controllerPassword.text.toString();
+                      Pengajuan profile =
+                          Pengajuan(desaId: desaid, rt: rt, rw: rw, latittude: lat, longitude: long, nik: nik, namawarga: namawarga, email: email, password: password);
+                      _apiService.createProfile(profile).then((isSuccess) {
+                        setState(() => _isLoading = false);
+                        if (isSuccess) {
+                          
+                          Navigator.pop(_scaffoldState.currentState.context);
+                          print(desaid);
+                          print(rt);
+                          print(rw);
+                          print(lat);
+                          print(long);
+                          print(nik);
+                          print(namawarga);
+                          print(email);
+                          print(password);
+                        } else {
+                          _scaffoldState.currentState.showSnackBar(SnackBar(
+                            content: Text("Submit data failed"),
+                          ));
+                          print(desaid);
+                          print(rt);
+                          print(rw);
+                          print(nik);
+                          print(namawarga);
+                          print(email);
+                          print(password);
+                        }
+                      });
+                    },
+                    child: Text(
+                      "Submit".toUpperCase(),
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                    color: Colors.orange[600],
+                  ),
+                )
+              ],
+            ),
+          ),
+          _isLoading
+              ? Stack(
+                  children: <Widget>[
+                    Opacity(
+                      opacity: 0.3,
+                      child: ModalBarrier(
+                        dismissible: false,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ],
+                )
+              : Container(),
+        ],
+      ),
+    );
+  }
+
+  // Widget _buildTextFieldDesaId() {
+  //   return TextField(
+  //     controller: _controllerDesaId,
+  //     keyboardType: TextInputType.number,
+  //     decoration: InputDecoration(
+  //       labelText: "ID Desa",
+  //       errorText: _isFieldDesaIdValid == null || _isFieldDesaIdValid
+  //           ? null
+  //           : "ID Desa Harus Diisi",
+  //     ),
+  //     onChanged: (value) {
+  //       bool isFieldValid = value.trim().isNotEmpty;
+  //       if (isFieldValid != _isFieldDesaIdValid) {
+  //         setState(() => _isFieldDesaIdValid = isFieldValid);
+  //       }
+  //     },
+  //   );
+  // }
+
+  Widget _builddropdownDesa(){
+    return Container(
+      padding: EdgeInsets.only(left: 15, right: 15, top: 5),
+      color: Colors.white,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Expanded(
+            child: DropdownButtonHideUnderline(
+              child: ButtonTheme(
+                alignedDropdown: true,
+                child: FormField<String>(
+                  builder: (FormFieldState<String> state) {
+                    return InputDecorator(
+                      decoration: InputDecoration(
+                          //labelStyle: textStyle,
+                          errorStyle: TextStyle(color: Colors.redAccent, fontSize: 16.0),
+                          hintText: 'Please select expense',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0))),
+                      isEmpty: selectName == '',
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: selectName,
+                          isDense: true,
+                          onChanged: (String newValue) {
+                            setState(() {
+                              selectName = newValue;
+                            });
+                          },
+                          items: data.map((list) {
+                            return DropdownMenuItem<String>(
+                              value: list['id'].toString(),
+                              child: Text(list['desa']),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextFieldRt() {
+    return TextField(
+      controller: _controllerRt,
+      keyboardType: TextInputType.number,
+      decoration: InputDecoration(
+        labelText: "RT",
+        errorText: _isFieldRtValid == null || _isFieldRtValid
+            ? null
+            : "RT Harus Diisi",
+      ),
+      onChanged: (value) {
+        bool isFieldValid = value.trim().isNotEmpty;
+        if (isFieldValid != _isFieldRtValid) {
+          setState(() => _isFieldRtValid = isFieldValid);
+        }
+      },
+    );
+  }
+
+  Widget _buildTextFieldRw() {
+    return TextField(
+      controller: _controllerRw,
+      keyboardType: TextInputType.number,
+      decoration: InputDecoration(
+        labelText: "RW",
+        errorText: _isFieldRwValid == null || _isFieldRwValid
+            ? null
+            : "RW Harus Diisi",
+      ),
+      onChanged: (value) {
+        bool isFieldValid = value.trim().isNotEmpty;
+        if (isFieldValid != _isFieldRwValid) {
+          setState(() => _isFieldRwValid = isFieldValid);
+        }
+      },
+    );
+  }
+
+  Widget _buildTextFieldNik() {
+    return TextField(
+      controller: _controllerNik,
+      keyboardType: TextInputType.number,
+      decoration: InputDecoration(
+        labelText: "NIK",
+        errorText: _isFieldNikValid == null || _isFieldNikValid
+            ? null
+            : "NIK Harus Diisi",
+      ),
+      onChanged: (value) {
+        bool isFieldValid = value.trim().isNotEmpty;
+        if (isFieldValid != _isFieldNikValid) {
+          setState(() => _isFieldNikValid = isFieldValid);
+        }
+      },
+    );
+  }
+
+
+  Widget _buildTextFieldName() {
+    return TextField(
+      controller: _controllerNamawarga,
+      keyboardType: TextInputType.text,
+      decoration: InputDecoration(
+        labelText: "Nama Lengkap Warga",
+        errorText: _isFieldNamawargaValid == null || _isFieldNamawargaValid
+            ? null
+            : "Nama Warga Harus Lengkap",
+      ),
+      onChanged: (value) {
+        bool isFieldValid = value.trim().isNotEmpty;
+        if (isFieldValid != _isFieldNamawargaValid) {
+          setState(() => _isFieldNamawargaValid = isFieldValid);
+        }
+      },
+    );
+  }
+
+  Widget _buildTextFieldEmail() {
+    return TextField(
+      controller: _controllerEmail,
+      keyboardType: TextInputType.emailAddress,
+      decoration: InputDecoration(
+        labelText: "Email",
+        errorText: _isFieldEmailValid == null || _isFieldEmailValid
+            ? null
+            : "Email is required",
+      ),
+      onChanged: (value) {
+        bool isFieldValid = value.trim().isNotEmpty;
+        if (isFieldValid != _isFieldEmailValid) {
+          setState(() => _isFieldEmailValid = isFieldValid);
+        }
+      },
+    );
+  }
+
+  Widget _buildTextFieldPassword() {
+    return TextField(
+      controller: _controllerPassword,
+      keyboardType: TextInputType.visiblePassword,
+      decoration: InputDecoration(
+        labelText: "Password",
+        errorText: _isFieldPasswordValid == null || _isFieldPasswordValid
+            ? null
+            : "Password Harus Diisi",
+      ),
+      onChanged: (value) {
+        bool isFieldValid = value.trim().isNotEmpty;
+        if (isFieldValid != _isFieldPasswordValid) {
+          setState(() => _isFieldPasswordValid = isFieldValid);
+        }
+      },
+    );
+  }
+}
